@@ -31,12 +31,14 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+extern FDCAN_HandleTypeDef hfdcan1;
 
+extern I2C_HandleTypeDef hi2c2;
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-extern I2C_HandleTypeDef hi2c2;
+
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -57,6 +59,12 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define CAN_ID0_Pin GPIO_PIN_3
+#define CAN_ID0_GPIO_Port GPIOB
+#define CAN_ID1_Pin GPIO_PIN_4
+#define CAN_ID1_GPIO_Port GPIOB
+#define CAN_ID3_Pin GPIO_PIN_5
+#define CAN_ID3_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 
