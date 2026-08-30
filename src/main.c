@@ -18,6 +18,10 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "BMP280.h"
+#include "UART_Control.h"
+#include "CAN_DIAG.h"
+#include "TCA9548A.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */

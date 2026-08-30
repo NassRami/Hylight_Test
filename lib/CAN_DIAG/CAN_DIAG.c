@@ -1,5 +1,6 @@
 #include "CAN_DIAG.h"
 #include "main.h"
+#include <stdbool.h>
 #include <stdint.h>
 
 static uint32_t CAN_GetId(void)
@@ -23,8 +24,8 @@ static uint32_t CAN_GetId(void)
 
 
     if (HAL_GPIO_ReadPin(
-            CAN_ID2_GPIO_Port,
-            CAN_ID2_Pin) == GPIO_PIN_SET)
+            CAN_ID3_GPIO_Port,
+            CAN_ID3_Pin) == GPIO_PIN_SET)
     {
         id |= (1U << 2U);
     }
@@ -41,5 +42,5 @@ bool CAN_Init(void)
     {
         return false;
     }
- 
+ return true;
 }
