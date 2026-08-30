@@ -8,6 +8,9 @@
 /* TCA9548A Channel Count */
 #define TCA9548A_CHANNEL_COUNT 8 // Total number of channels
 
+/* BMP280 Address */
+#define BMP280_ADDRESS 0x76
+
 
 /* I2C Timeout */
 #define I2C_TIMEOUT 1000
