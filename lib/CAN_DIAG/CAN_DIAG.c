@@ -32,3 +32,14 @@ static uint32_t CAN_GetId(void)
 
     return id;
 }
+
+bool CAN_Init(void)
+{
+    uint32_t id = CAN_GetId();
+    // Configure the FDCAN peripheral with the obtained ID
+    if (HAL_FDCAN_Start(&hfdcan1) != HAL_OK)
+    {
+        return false;
+    }
+ 
+}
