@@ -243,3 +243,77 @@ bool BMP280_ReadRawData(uint8_t channel, int32_t *raw_temperature, int32_t *raw_
 
     return true; // Successfully read raw data
 }
+bool BMP280_StartMeasurement(uint8_t channel)
+{
+    uint8_t ctrl_meas;
+
+    if (channel >= BMP280_SENSOR_COUNT)
+    {
+        return false;
+    }
+    ctrl_meas =
+        (uint8_t)(
+            (BMP280_OVERSAMPLING_TEMP_X1 << 5U) |
+            (BMP280_OVERSAMPLING_PRESSURE_X1 << 2U) |
+            BMP280_MODE_FORCED
+        );
+
+    /* Writing forced mode starts the measurement. */
+    return BMP280_WriteRegister(channel, BMP280_CONFIG_REG, &ctrl_meas, 1U);
+}
+bool BMP280_IsMeasuring(uint8_t channel)
+{
+    uint8_t status;
+
+    if (channel >= BMP280_SENSOR_COUNT)
+    {
+        return false;
+    }
+
+    if (!BMP280_ReadRegister(channel, BMP280_STATUS_REG, &status, 1U))
+    {
+        return false; // Failed to read status register
+    }
+    /*
+     * STATUS bit 3:
+     *
+     * 1 -> measurement running
+     * 0 -> measurement finished
+     */
+    if((status & 0x08) != 0)
+    {
+        return true; // Measurement is still running
+    }
+    else
+    {
+        return false; // Measurement is finished
+    }
+}
+bool BMP280_Mesure(uint8_t channel, float *temperature, float *pressure)
+{
+    int32_t raw_temperature = 0;
+    int32_t raw_pressure = 0;
+
+    if (channel >= BMP280_SENSOR_COUNT || temperature == NULL || pressure == NULL)
+    {
+        return false; // Invalid parameters
+    }
+
+    // Start a forced measurement
+    if (!BMP280_StartMeasurement(channel))
+    {
+        return false; // Failed to start measurement
+    }
+    while (BMP280_IsMeasuring(channel))
+    {
+        HAL_Delay(10); // Wait for measurement to complete and restart the check
+    }
+    if(!BMP280_ReadRawData(channel, &raw_temperature, &raw_pressure))
+    {
+        return false; // Failed to read raw data
+    }
+    
+    return true; // Measurement successful
+
+
+}

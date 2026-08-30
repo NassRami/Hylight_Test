@@ -48,6 +48,8 @@
 #define BMP280_CONFIG_REG 0xF4 // Register address for configuration
 #define BMP280_FILTER_REG 0xF5 // Register address for filter settings
 #define BMP280_MESURE_START_REG 0xF7 // Register address for pressure MSB
+#define BMP280_STATUS_REG 0xF3 // Register address for status
+
 
 
 
