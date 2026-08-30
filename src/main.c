@@ -20,6 +20,7 @@
 #include "main.h"
 #include "TCA9548A.h"
 #include "BMP280.h"
+#include "MAX6650.h"
 
 
 /* Private includes ----------------------------------------------------------*/

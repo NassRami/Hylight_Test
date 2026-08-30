@@ -2,6 +2,31 @@
 #define CONFIG_H
 
 
+
+
+typedef enum
+{
+    MAX6650_FAN_FULL_ON     = 0U,  
+    MAX6650_FAN_FULL_OFF    = 1U,  
+    MAX6650_FAN_CLOSED_LOOP = 2U,  
+    MAX6650_FAN_OPEN_LOOP   = 3U   
+
+} MAX6650_Mode_t;
+
+/* Operating modes */
+#define MAX6650_MODE_FULL_ON             0x00U
+#define MAX6650_MODE_FULL_OFF            0x10U
+#define MAX6650_MODE_OPEN_LOOP           0x30U
+
+typedef enum
+{
+    MAX6650_STATUS_OK = 0,
+    MAX6650_STATUS_FAN_ERROR,
+    MAX6650_STATUS_I2C_ERROR
+
+} MAX6650_Status_t;
+
+
 /* TCA9548A Address */
 #define TCA9548A_ADDRESS 0x70
 
@@ -50,8 +75,19 @@
 #define BMP280_MESURE_START_REG 0xF7 // Register address for pressure MSB
 #define BMP280_STATUS_REG 0xF3 // Register address for status
 
+/* MAX6650 Address */
+#define MAX6650_ADDRESS                  0x48U
 
+/*MAX6650 REG */
+#define MAX6650_COUNT_REG                0x16U
+#define MAX6650_DAC_REG                  0x06U
+#define MAX6650_OPEN_LOOP_START_DAC_VALUE 0x00U
+#define MAX6650_TACH0_REG                   0x0CU
+#define MAX6650_CONFIG_REG                0x02U
 
+/* Tachometer count time */
+#define MAX6650_COUNT_1S                 0x02U
+#define MAX6650_COUNT_2S                 0x03U
 
 
 /* I2C Timeout */
