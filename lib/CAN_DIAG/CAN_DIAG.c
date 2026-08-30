@@ -1,0 +1,34 @@
+#include "CAN_DIAG.h"
+#include "main.h"
+#include <stdint.h>
+
+static uint32_t CAN_GetId(void)
+{
+    uint32_t id = 0U;
+    
+    if (HAL_GPIO_ReadPin(
+            CAN_ID0_GPIO_Port,
+            CAN_ID0_Pin) == GPIO_PIN_SET)
+    {
+        id |= (1U << 0U);
+    }
+
+
+    if (HAL_GPIO_ReadPin(
+            CAN_ID1_GPIO_Port,
+            CAN_ID1_Pin) == GPIO_PIN_SET)
+    {
+        id |= (1U << 1U);
+    }
+
+
+    if (HAL_GPIO_ReadPin(
+            CAN_ID2_GPIO_Port,
+            CAN_ID2_Pin) == GPIO_PIN_SET)
+    {
+        id |= (1U << 2U);
+    }
+
+
+    return id;
+}
