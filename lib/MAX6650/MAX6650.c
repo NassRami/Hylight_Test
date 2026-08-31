@@ -63,7 +63,7 @@ static bool MAX6650_WriteMode(uint8_t mode)
         config
     );
 }
-static bool MAX6650_SetMode(MAX6650_Mode_t mode)
+bool MAX6650_SetMode(MAX6650_Mode_t mode)
 {
     bool status;
 
@@ -87,10 +87,10 @@ static bool MAX6650_SetMode(MAX6650_Mode_t mode)
             break;
 
 
-        case MAX6650_FAN_OPEN_LOOP:
+        case MAX6650_FAN_CLOSED_LOOP:
 
             status = MAX6650_WriteMode(
-                MAX6650_MODE_OPEN_LOOP
+                MAX6650_MODE_CLOSED_LOOP
             );
 
             break;
@@ -108,7 +108,7 @@ static bool MAX6650_SetMode(MAX6650_Mode_t mode)
 
     return true;
 }
-bool MAX6650_Init(void)
+void MAX6650_Init(void)
 {
     /*
      * Configure tachometer
@@ -117,7 +117,7 @@ bool MAX6650_Init(void)
             MAX6650_COUNT_REG,
             MAX6650_COUNT_1S))
     {
-        return false;
+        return ;
     }
 
     /*
@@ -126,50 +126,34 @@ bool MAX6650_Init(void)
     if (!MAX6650_SetMode(
             MAX6650_FAN_FULL_OFF))
     {
-        return false;
+        return ;
     }
-
-
-    return true;
 }
 
-
-
-bool MAX6650_SetOpenLoop(uint8_t dac_value)
+bool MAX6650_SetClosedLoop(uint8_t speed_value)
 {
-    /*
-     Put  DAC = 0
-     */
-    if (!MAX6650_WriteRegister(
-            MAX6650_DAC_REG,
-            MAX6650_OPEN_LOOP_START_DAC_VALUE))
+    /* Pass to full ON first*/
+    if (!MAX6650_SetMode(MAX6650_FAN_FULL_ON))
     {
         return false;
     }
 
-    if (!MAX6650_SetMode(
-            MAX6650_FAN_OPEN_LOOP))
-    {
-        return false;
-    }
-
-    /*
-     DeElay for the fan to start
-     */
+    /* Delay for the fan to start */
     HAL_Delay(500U);
 
-    /*
-    ApplyDAC value.
-     */
-    if (!MAX6650_WriteRegister(
-            MAX6650_DAC_REG,
-            dac_value))
+    if (!MAX6650_WriteRegister(MAX6650_SPEED_REG, speed_value))
+    {
+        return false;
+    }
+    if (!MAX6650_SetMode(MAX6650_MODE_CLOSED_LOOP))
     {
         return false;
     }
 
     return true;
 }
+
+
 bool MAX6650_GetRPM(uint16_t *rpm)
 {
     uint8_t tach_count = 0U;
@@ -218,49 +202,4 @@ MAX6650_Status_t MAX6650_CheckFan(void)
     }
 
     return MAX6650_STATUS_OK;
-}
-void MAX6650_RunOpenLoop(uint8_t dac_value)
-{
-    MAX6650_Status_t max6650_fan_status =MAX6650_STATUS_OK;
-    /*
-      OPEN LOOP mode.
-     */
-    if (!MAX6650_SetOpenLoop(dac_value))
-    {
-        return;
-    }
-
-    while (1)
-    {
-        if (!MAX6650_GetRPM(
-                &max6650_fan_rpm))
-        {
-            return;
-        }
-        else
-        {
-            /*
-             * Check fan state.
-             */
-            max6650_fan_status =
-                MAX6650_CheckFan();
-
-
-            if (max6650_fan_status ==
-                MAX6650_STATUS_FAN_ERROR)
-            {
-
-            }
-            else if (max6650_fan_status ==
-                     MAX6650_STATUS_I2C_ERROR)
-            {
-            }
-            else
-            {
-
-            }
-        }
-
-        HAL_Delay(1000);
-    }
 }

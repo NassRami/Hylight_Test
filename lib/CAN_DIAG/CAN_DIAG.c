@@ -42,5 +42,5 @@ bool CAN_Init(void)
     {
         return false;
     }
- return true;
+    return true;
 }

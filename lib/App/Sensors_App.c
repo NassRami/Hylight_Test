@@ -2,7 +2,7 @@
 #include "BMP280.h"
 #include "Config.h"
 
-static uint32_t sensors_press_val[SENSORS_APP_SENSOR_COUNT];
+static uint32_t sensors_press_val[BMP280_SENSOR_COUNT];
 
 static int16_t delta_p1 = 0;
 static int16_t delta_p2 = 0;
@@ -21,13 +21,10 @@ void Sensors_App_Process(void)
          channel < BMP280_SENSOR_COUNT;
          channel++)
     {
-        if (!BMP280_Mesure(
+        BMP280_Mesure(
                 channel,
                 &temp,
-                &sensors_press_val[channel]))
-        {
-            return ;
-        }
+                &sensors_press_val[channel]);
     }
     //Calcul DeltaP
     delta_p1 =(int16_t)((int32_t)sensors_press_val[1] -(int32_t)sensors_press_val[0]);

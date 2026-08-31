@@ -15,8 +15,9 @@ typedef enum
 
 /* Operating modes */
 #define MAX6650_MODE_FULL_ON             0x00U
-#define MAX6650_MODE_FULL_OFF            0x10U
-#define MAX6650_MODE_OPEN_LOOP           0x30U
+#define MAX6650_MODE_FULL_OFF            0x01U
+#define MAX6650_MODE_CLOSED_LOOP         0x10U
+#define MAX6650_MODE_OPEN_LOOP           0x11U
 
 typedef enum
 {
@@ -84,6 +85,7 @@ typedef enum
 #define MAX6650_OPEN_LOOP_START_DAC_VALUE 0x00U
 #define MAX6650_TACH0_REG                   0x0CU
 #define MAX6650_CONFIG_REG                0x02U
+#define MAX6650_SPEED_REG       0x00
 
 /* Tachometer count time */
 #define MAX6650_COUNT_1S                 0x02U

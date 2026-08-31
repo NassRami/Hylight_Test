@@ -1,12 +1,84 @@
 #include "UART_Control.h"
 #include "main.h"
 #include "stdint.h"
+#include "Fan_APP.h"
 #include <stdbool.h>
 static bool uart_frame_state = false; // Flag to indicate if a complete UART frame has been received
 static uint8_t uart_rx_buffer[8u]; // Buffer to store received UART data
 static uint8_t uart_buffer_index; // Index to keep track of the position in the buffer
 static uint8_t rx_byte = 0U;
+static uint8_t UART_Control_COBSEncode(
+    const uint8_t *input,
+    uint8_t input_length,
+    uint8_t *output,
+    uint8_t output_size)
+{
+    uint8_t read_index = 0U;
+    uint8_t write_index = 1U;
 
+    uint8_t code_index = 0U;
+    uint8_t code = 1U;
+
+
+    while (read_index < input_length)
+    {
+        if (input[read_index] == 0U)
+        {
+            output[code_index] = code;
+
+            code = 1U;
+
+            code_index = write_index;
+
+            write_index++;
+
+            if (write_index > output_size)
+            {
+                return 0U;
+            }
+        }
+        else
+        {
+            if (write_index >= output_size)
+            {
+                return 0U;
+            }
+
+            output[write_index] =
+                input[read_index];
+
+            write_index++;
+
+            code++;
+
+
+            if (code == 0xFFU)
+            {
+                output[code_index] = code;
+
+                code = 1U;
+
+                code_index = write_index;
+
+                write_index++;
+
+                if (write_index > output_size)
+                {
+                    return 0U;
+                }
+            }
+        }
+
+
+        read_index++;
+    }
+
+
+    output[code_index] = code;
+
+
+    return write_index;
+}
 void UART_Init(void)
 {
 
@@ -23,7 +95,7 @@ void UART_Init(void)
     );
 }
 void HAL_UART_RxCpltCallback(
-    UART_HandleTypeDef *huart)
+    UART_HandleTypeDef *huart3)
 {
         if (rx_byte == 0x00U) // Check for end of frame (0x00)
         {
@@ -45,7 +117,7 @@ void HAL_UART_RxCpltCallback(
         }
 
         (void)HAL_UART_Receive_IT( // Restart reception of one byte
-            &huart3,
+            huart3,
             &rx_byte,
             1U
         );
@@ -83,6 +155,7 @@ void UART_Control_Process(void)
 {
     uint8_t decoded_buffer[8u]; // Buffer to store the decoded data
     uint16_t received_CRC = 0U; // Variable to store the received CRC value
+    uint8_t command;
     if (!uart_frame_state)// UART Frame is not ready
     {
         return;
@@ -100,5 +173,115 @@ void UART_Control_Process(void)
     received_CRC = ((uint16_t) decoded_buffer[1] << 8)| (uint16_t)decoded_buffer[2] ; // Extract the received CRC from the decoded buffer
 
     /* Calculate the CRC */
+    
+    /*
+            to fix
+    */
+
+    command = decoded_buffer [0];
+
+    switch (command)
+    {
+        case 0x01u:
+            Fan_APP_SetMode(FAN_APP_MODE_FORCE_ON);
+            break;
+
+        case 0x02u:
+            Fan_APP_SetMode(FAN_APP_MODE_FORCE_OFF);
+            break;   
+ 
+        case 0x03u:
+            Fan_APP_SetMode(FAN_APP_MODE_AUTO);
+            break;
+    }
+         
+
 
 }
+
+/***************************************************************************************
+                                UART Transmission
+****************************************************************************************/
+
+void UART_Control_TransmitDiagnostic(
+    int16_t delta_p1,
+    int16_t delta_p2,
+    int16_t delta_p3,
+    uint16_t fan_rpm,
+    uint8_t status_flags)
+{
+    uint8_t data[11U];
+    uint8_t encoded[13U]; // 11 for (DATA + CRC ), 1 for CODECOBS , 1 for delimiter
+    uint8_t length_encode;
+    data[0] = (uint8_t)(((uint16_t)delta_p1 >> 8U) & 0xFFU);
+    data[1] = (uint8_t)((uint16_t)delta_p1 & 0xFFU);
+
+    data[2] = (uint8_t)(((uint16_t)delta_p2 >> 8U) & 0xFFU);
+    data[3] = (uint8_t)((uint16_t)delta_p2 & 0xFFU);
+
+    data[4] = (uint8_t)(((uint16_t)delta_p3 >> 8U) & 0xFFU);
+    data[5] = (uint8_t)((uint16_t)delta_p3 & 0xFFU);
+
+    data[6] = (uint8_t)((fan_rpm >> 8U) & 0xFFU);
+    data[7] = (uint8_t)(fan_rpm & 0xFFU);
+
+    data[8] = status_flags;
+
+
+    /* =========================
+     * CRC16
+     *
+     * CRC calculated only on:
+     * delta_p1
+     * delta_p2
+     * delta_p3
+     * fan_rpm
+     * status_flags
+     *
+     * raw[0] -> raw[8]
+     * ========================= */
+
+    // crc =
+    //     UART_Control_CRC16(
+    //         raw,
+    //         UART_DIAG_DATA_SIZE
+    //     );
+
+
+    // /* CRC MSB */
+    // raw[9] =
+    //     (uint8_t)(
+    //         (crc >> 8U) & 0xFFU
+    //     );
+
+
+    // /* CRC LSB */
+    // raw[10] =
+    //     (uint8_t)(
+    //         crc & 0xFFU
+    //     );
+
+     length_encode = UART_Control_COBSEncode(
+            data,
+            11U,
+            encoded,
+            12U // Data + COBS
+        );
+    if (length_encode == 0U)
+    {
+        return;//Error 
+    }
+
+    encoded[length_encode] = 0x00U;
+
+    length_encode++;
+
+
+    (void)HAL_UART_Transmit(
+        &huart3,
+        encoded,
+        length_encode,
+        100U
+    );
+}
+
