@@ -18,7 +18,7 @@ void Sensors_App_Process(void)
     uint8_t channel;
     int32_t temp = 0;
     for (channel = 0U;
-         channel < SENSORS_APP_SENSOR_COUNT;
+         channel < BMP280_SENSOR_COUNT;
          channel++)
     {
         if (!BMP280_Mesure(
