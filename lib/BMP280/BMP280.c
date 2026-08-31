@@ -150,9 +150,12 @@ static int32_t BMP280_CompensateTemperature(uint8_t channel,int32_t adc_temp)
 
     calibration = &bmp280_calibration[channel];
 
-    var1 = ((((adc_temp >> 3) -((int32_t)calibration->dig_T1 << 1))) *((int32_t)calibration->dig_T2)) >> 11);
+    var1 = (adc_temp >> 3) -((int32_t)calibration->dig_T1 << 1);
+    var1 = (var1 * (int32_t)calibration->dig_T2) >> 11;
 
-    var2 = (((((adc_temp >> 4) -((int32_t)calibration->dig_T1)) *((adc_temp >> 4) -((int32_t)calibration->dig_T1))) >> 12) *((int32_t)calibration->dig_T3)) >> 14);
+    var2 = (adc_temp >> 4) - (int32_t)calibration->dig_T1;
+    var2 = (var2 * var2) >> 12;
+    var2 = (var2 * (int32_t)calibration->dig_T3) >> 14;
 
     bmp280_t_fine[channel] = var1 + var2;
 
