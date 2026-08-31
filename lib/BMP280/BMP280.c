@@ -26,6 +26,7 @@ typedef struct
 
 } BMP280_Calibration_t;
 static BMP280_Calibration_t bmp280_calibration[BMP280_SENSOR_COUNT];
+static int32_t bmp280_t_fine[BMP280_SENSOR_COUNT];
 /******************************************
         Private functions
 *******************************************/
@@ -139,6 +140,95 @@ static bool BMP280_ReadCalibration(uint8_t channel)
     
     return true; // Calibration data read successfully
 }
+static int32_t BMP280_CompensateTemperature(uint8_t channel,int32_t adc_temp)
+{
+    int32_t var1;
+    int32_t var2;
+    int32_t temp;
+
+    BMP280_Calibration_t *calibration;
+
+    calibration = &bmp280_calibration[channel];
+
+    var1 = ((((adc_temp >> 3) -((int32_t)calibration->dig_T1 << 1))) *((int32_t)calibration->dig_T2)) >> 11);
+
+    var2 = (((((adc_temp >> 4) -((int32_t)calibration->dig_T1)) *((adc_temp >> 4) -((int32_t)calibration->dig_T1))) >> 12) *((int32_t)calibration->dig_T3)) >> 14);
+
+    bmp280_t_fine[channel] = var1 + var2;
+
+    temp = (bmp280_t_fine[channel] * 5 + 128) >> 8;
+
+    return temp;
+}
+static uint32_t BMP280_CompensatePressure(
+    uint8_t channel,
+    int32_t adc_press)
+{
+    int64_t var1;
+    int64_t var2;
+    int64_t pressure;
+
+    BMP280_Calibration_t *calibration;
+
+    calibration = &bmp280_calibration[channel];
+
+    var1 =
+        ((int64_t)bmp280_t_fine[channel]) -
+        128000;
+
+    var2 =
+        var1 *
+        var1 *
+        (int64_t)calibration->dig_P6;
+
+    var2 =
+        var2 +
+        ((var1 *
+        (int64_t)calibration->dig_P5) << 17);
+
+    var2 =
+        var2 +
+        ((int64_t)calibration->dig_P4 << 35);
+
+    var1 =
+        ((var1 *
+        var1 *
+        (int64_t)calibration->dig_P3) >> 8) +
+        ((var1 *
+        (int64_t)calibration->dig_P2) << 12);
+
+    var1 =
+        (((((int64_t)1 << 47) + var1) *
+        (int64_t)calibration->dig_P1) >> 33);
+
+    if (var1 == 0)
+    {
+        return 0U;
+    }
+
+    pressure =
+        1048576 - adc_press;
+
+    pressure =
+        (((pressure << 31) - var2) *
+        3125) /
+        var1;
+
+    var1 =
+        (((int64_t)calibration->dig_P9 *
+        (pressure >> 13) *
+        (pressure >> 13)) >> 25);
+
+    var2 =
+        (((int64_t)calibration->dig_P8 *
+        pressure) >> 19);
+
+    pressure =
+        ((pressure + var1 + var2) >> 8) +
+        ((int64_t)calibration->dig_P7 << 4);
+
+    return (uint32_t)(pressure >> 8);//Convert to Pa
+}
 
 bool BMP280_Init(uint8_t channel)
 {
@@ -193,22 +283,21 @@ bool BMP280_Configure(uint8_t channel)
     return true; // Configuration successful
     
 }
-bool BMP280_InitALL(void)
+void BMP280_InitALL(void)
 {
     for (uint8_t channel = 0; channel < BMP280_SENSOR_COUNT; channel++)
     {
         if (!BMP280_Init(channel))
         {
-            return false; // Initialization failed for this channel
+            return ; // Initialization failed for this channel
         }
         if (!BMP280_Configure(channel))
         {
-            return false; // Configuration failed for this channel
+            return ; // Configuration failed for this channel
         }
     }
-    return true; // All sensors initialized and configured successfully
 }
-bool BMP280_ReadRawData(uint8_t channel, int32_t *raw_temperature, int32_t *raw_pressure)
+bool BMP280_ReadRawData(uint8_t channel, uint32_t *raw_temperature, uint32_t *raw_pressure)
 {
     uint8_t data[BMP280_RAW_DATA_SIZE];
 
@@ -232,14 +321,14 @@ bool BMP280_ReadRawData(uint8_t channel, int32_t *raw_temperature, int32_t *raw_
 
     // Parse the raw pressure and temperature values
     *raw_pressure =
-        ((int32_t)data[0] << 12U) |
-        ((int32_t)data[1] << 4U) |
-        ((int32_t)data[2] >> 4U);
+        ((uint32_t)data[0] << 12U) |
+        ((uint32_t)data[1] << 4U) |
+        ((uint32_t)data[2] >> 4U);
 
     *raw_temperature =
-        ((int32_t)data[3] << 12U) |
-        ((int32_t)data[4] << 4U) |
-        ((int32_t)data[5] >> 4U);
+        ((uint32_t)data[3] << 12U) |
+        ((uint32_t)data[4] << 4U) |
+        ((uint32_t)data[5] >> 4U);
 
     return true; // Successfully read raw data
 }
@@ -289,12 +378,12 @@ bool BMP280_IsMeasuring(uint8_t channel)
         return false; // Measurement is finished
     }
 }
-bool BMP280_Mesure(uint8_t channel, float *temperature, float *pressure)
+bool BMP280_Mesure(uint8_t channel, int32_t *temp, uint32_t *press)
 {
-    int32_t raw_temperature = 0;
-    int32_t raw_pressure = 0;
+    uint32_t raw_temperature = 0;
+    uint32_t raw_pressure = 0;
 
-    if (channel >= BMP280_SENSOR_COUNT || temperature == NULL || pressure == NULL)
+    if (channel >= BMP280_SENSOR_COUNT )
     {
         return false; // Invalid parameters
     }
@@ -312,6 +401,8 @@ bool BMP280_Mesure(uint8_t channel, float *temperature, float *pressure)
     {
         return false; // Failed to read raw data
     }
+    *temp = BMP280_CompensateTemperature(channel,(int32_t)raw_temperature); //Compensate Temp
+    *press = BMP280_CompensatePressure(channel,(int32_t)raw_pressure); // compensate Pressure
     
     return true; // Measurement successful
 

@@ -4,5 +4,5 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-bool BMP280_Init(uint8_t channel);
+void BMP280_InitALL(void);
 #endif // BMP280_H
