@@ -22,6 +22,7 @@
 #include "UART_Control.h"
 #include "CAN_DIAG.h"
 #include "TCA9548A.h"
+#include "Fan_APP.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */

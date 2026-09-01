@@ -10,8 +10,11 @@ typedef enum
 } Fan_APP_Mode_t;
 
 
+
 void Fan_APP_SetMode(Fan_APP_Mode_t mode);
 void Fan_APP_Init(void);
 void Fan_APP_Process(void);
+bool Fan_APP_Fault(void);
+
 
 #endif //FAN_APP_H

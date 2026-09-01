@@ -2,6 +2,7 @@
 #include "Fan_APP.h"
 #include "Config.h"
 #include "MAX6650.h"
+#include <stdbool.h>
 
 static Fan_APP_Mode_t fan_mode = FAN_APP_MODE_FORCE_OFF;
 static bool fault=false;
@@ -57,4 +58,8 @@ void Fan_APP_Process(void)
     else{
         fault = true; // hardware
     }
+}
+bool Fan_APP_Fault(void)
+{
+    return fault;
 }

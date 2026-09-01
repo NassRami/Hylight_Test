@@ -30,3 +30,18 @@ void App_Process(void)
         Fan_APP_Process();
     }
 }
+uint8_t App_GetStatusFlags(void)
+{
+    uint8_t flags = 0U;
+
+    if (Sensors_App_Fault())
+    {
+        flags |= STATUS_SENSOR_FAULT;
+    }
+    if(Fan_APP_Fault())
+    {
+        flags |= STATUS_FAN_FAULT;
+    }
+
+    return flags;
+}

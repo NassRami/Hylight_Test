@@ -208,7 +208,7 @@ void UART_Control_TransmitDiagnostic(
     int16_t delta_p2,
     int16_t delta_p3,
     uint16_t fan_rpm,
-    uint8_t status_flags)
+    uint8_t flags)
 {
     uint8_t data[11U];
     uint8_t encoded[13U]; // 11 for (DATA + CRC ), 1 for CODECOBS , 1 for delimiter

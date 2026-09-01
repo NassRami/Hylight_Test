@@ -7,7 +7,6 @@
 
 
 
-static uint16_t max6650_fan_rpm = 0U;
 
 static bool MAX6650_ReadRegister(uint8_t reg, uint8_t *data);
 static bool MAX6650_WriteRegister(uint8_t reg, uint8_t data);
@@ -198,7 +197,7 @@ MAX6650_Status_t MAX6650_CheckFan(void)
      */
     if (rpm == 0U)
     {
-        return MAX6650_STATUS_FAN_ERROR;
+        return MAX6650_STATUS_FAN_ERROR; //Disconnected or Hardware Problem
     }
 
     return MAX6650_STATUS_OK;
