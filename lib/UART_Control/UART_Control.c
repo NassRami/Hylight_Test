@@ -225,7 +225,7 @@ void UART_Control_TransmitDiagnostic(
     data[6] = (uint8_t)((fan_rpm >> 8U) & 0xFFU);
     data[7] = (uint8_t)(fan_rpm & 0xFFU);
 
-    data[8] = status_flags;
+    data[8] = flags;
 
 
     /* =========================
@@ -248,18 +248,9 @@ void UART_Control_TransmitDiagnostic(
     //     );
 
 
-    // /* CRC MSB */
-    // raw[9] =
-    //     (uint8_t)(
-    //         (crc >> 8U) & 0xFFU
-    //     );
 
-
-    // /* CRC LSB */
-    // raw[10] =
-    //     (uint8_t)(
-    //         crc & 0xFFU
-    //     );
+    data[9] = (uint8_t)((crc >> 8U) & 0xFFU);// MSB
+    data[10] =(uint8_t)(crc & 0xFFU);// LSB
 
      length_encode = UART_Control_COBSEncode(
             data,
