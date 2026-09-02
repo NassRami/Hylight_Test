@@ -1,4 +1,4 @@
-# HyLight Technical Test
+# HyLight Technical Test ( Case 1 )
 ## Status Flags
 
 Two status flags are inserted into the **DIAGNOSTIC PACKET** :  
