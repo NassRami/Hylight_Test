@@ -1,9 +1,6 @@
-<<<<<<< HEAD
-# HyLight Technical Test ( Case 1 )
-=======
-# HyLight Technical Test
 
->>>>>>> 9f7651e (Update README.md)
+# HyLight Technical Test ( Case 1 )
+
 ## Status Flags
 
 Two status flags are inserted into the **DIAGNOSTIC PACKET** :  
