@@ -180,6 +180,7 @@ void UART_Control_Process(void)
 {
     uint8_t decoded_buffer[8u]; // Buffer to store the decoded data
     uint16_t received_CRC = 0U; // Variable to store the received CRC value
+    uint16_t computed_CRC = 0U; // Variable to store the computed CRC value
     uint8_t command;
     if (!uart_frame_state)// UART Frame is not ready
     {
@@ -190,13 +191,21 @@ void UART_Control_Process(void)
     /* Process the received UART frame  */
     if(!UART_COBSDecode(uart_rx_buffer, decoded_buffer, uart_buffer_index))
     {
-        // Handle COBS decoding error
-        uart_buffer_index = 0U; // Reset the buffer index
+        // Error in COBS 
+        uart_buffer_index = 0U;
         return;
     }
 
     received_CRC = ((uint16_t) decoded_buffer[1] << 8)| (uint16_t)decoded_buffer[2] ; // Extract the received CRC from the decoded buffer
 
+    computed_CRC = UART_Control_CRC16(decoded_buffer, 1U); 
+
+    if (received_CRC != computed_CRC)
+    {
+        // Error in CRC
+        uart_buffer_index = 0U; 
+        return;
+    }
 
 
     command = decoded_buffer [0];
@@ -250,7 +259,7 @@ void UART_Control_TransmitDiagnostic(
     data[8] = flags;
 
     crc = UART_Control_CRC16(data, 9U);// from byte 0 to byte 8 (9 bytes) 
-    
+
 
 
 
