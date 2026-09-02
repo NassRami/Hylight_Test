@@ -79,6 +79,31 @@ static uint8_t UART_Control_COBSEncode(
 
     return write_index;
 }
+static uint16_t UART_Control_CRC16(const uint8_t *data, uint8_t length)
+{
+    uint16_t crc = 0xFFFFU;       // Initial value for CRC16
+    uint8_t i;
+    uint8_t bit;
+
+    for (i = 0U; i < length; i++)
+    {
+        crc ^= ((uint16_t)data[i] << 8U);
+
+        for (bit = 0U; bit < 8U; bit++)
+        {
+            if ((crc & 0x8000U) != 0U)
+            {
+                crc = (uint16_t)((crc << 1U) ^ 0x1021U); //polynomial 0x1021
+            }
+            else
+            {
+                crc = (uint16_t)(crc << 1U);
+            }
+        }
+    }
+
+    return crc;                  
+}
 void UART_Init(void)
 {
 
@@ -172,11 +197,7 @@ void UART_Control_Process(void)
 
     received_CRC = ((uint16_t) decoded_buffer[1] << 8)| (uint16_t)decoded_buffer[2] ; // Extract the received CRC from the decoded buffer
 
-    /* Calculate the CRC */
-    
-    /*
-            to fix
-    */
+
 
     command = decoded_buffer [0];
 
@@ -213,6 +234,7 @@ void UART_Control_TransmitDiagnostic(
     uint8_t data[11U];
     uint8_t encoded[13U]; // 11 for (DATA + CRC ), 1 for CODECOBS , 1 for delimiter
     uint8_t length_encode;
+    uint16_t crc ;
     data[0] = (uint8_t)(((uint16_t)delta_p1 >> 8U) & 0xFFU);
     data[1] = (uint8_t)((uint16_t)delta_p1 & 0xFFU);
 
@@ -227,25 +249,9 @@ void UART_Control_TransmitDiagnostic(
 
     data[8] = flags;
 
+    crc = UART_Control_CRC16(data, 9U);// from byte 0 to byte 8 (9 bytes) 
+    
 
-    /* =========================
-     * CRC16
-     *
-     * CRC calculated only on:
-     * delta_p1
-     * delta_p2
-     * delta_p3
-     * fan_rpm
-     * status_flags
-     *
-     * raw[0] -> raw[8]
-     * ========================= */
-
-    // crc =
-    //     UART_Control_CRC16(
-    //         raw,
-    //         UART_DIAG_DATA_SIZE
-    //     );
 
 
 
