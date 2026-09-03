@@ -35,8 +35,19 @@ static bool BMP280_ReadRegister(uint8_t channel, uint8_t reg, uint8_t *data, uin
 static bool BMP280_WriteRegister(uint8_t channel,uint8_t reg, uint8_t *data, uint16_t length);
 static bool BMP280_ReadChipID(uint8_t channel, uint8_t *chip_id);
 static bool BMP280_ReadCalibration(uint8_t channel);
+static uint32_t BMP280_CompensatePressure(
+    uint8_t channel,
+    int32_t adc_press);
+static int32_t BMP280_CompensateTemperature(uint8_t channel,int32_t adc_temp);
 
 
+/* @brief  Read data from a BMP280 register over I2C
+ * @param  channel: The TCA9548A channel where the BMP280 is connected
+ * @param  reg: The register address to read from
+ * @param  data: Pointer to a buffer to store the read data
+ * @param  length: Number of bytes to read
+ * @retval true if the read operation was successful, false otherwise
+ */
 static bool BMP280_ReadRegister(uint8_t channel, uint8_t reg, uint8_t *data, uint16_t length)
 {
     HAL_StatusTypeDef hal_status;
@@ -70,6 +81,13 @@ static bool BMP280_ReadRegister(uint8_t channel, uint8_t reg, uint8_t *data, uin
     return status;
 }
 
+/* @brief  Write data to a BMP280 register over I2C
+ * @param  channel: The TCA9548A channel where the BMP280 is connected
+ * @param  reg: The register address to write to
+ * @param  data: Pointer to the data to write
+ * @param  length: Number of bytes to write
+ * @retval true if the write operation was successful, false otherwise
+ */
 static bool BMP280_WriteRegister(uint8_t channel,uint8_t reg, uint8_t *data, uint16_t length)
 {
     HAL_StatusTypeDef hal_status;
@@ -101,6 +119,12 @@ static bool BMP280_WriteRegister(uint8_t channel,uint8_t reg, uint8_t *data, uin
 
     return status;
 }
+
+/* @brief  Read the chip ID from the BMP280 sensor
+ * @param  channel: The TCA9548A channel where the BMP280 is connected
+ * @param  chip_id: Pointer to a variable to store the read chip ID
+ * @retval true if the read operation was successful, false otherwise
+ */
 static bool BMP280_ReadChipID(uint8_t channel, uint8_t *chip_id)
 {
     if (channel >= TCA9548A_CHANNEL_COUNT || chip_id == NULL)
@@ -110,6 +134,10 @@ static bool BMP280_ReadChipID(uint8_t channel, uint8_t *chip_id)
     return BMP280_ReadRegister(channel, BMP280_CHIP_ID_REG, chip_id, 1U);
 }
 
+/* @brief  Read the calibration data from the BMP280 sensor
+ * @param  channel: The TCA9548A channel where the BMP280 is connected
+ * @retval true if the calibration data was read successfully, false otherwise
+ */
 static bool BMP280_ReadCalibration(uint8_t channel)
 {
     uint8_t data[24]; // BMP280 calibration data is 24 bytes
@@ -140,6 +168,12 @@ static bool BMP280_ReadCalibration(uint8_t channel)
     
     return true; // Calibration data read successfully
 }
+
+/* @brief  Compensate the raw temperature reading from the BMP280 sensor
+ * @param  channel: The TCA9548A channel where the BMP280 is connected
+ * @param  adc_temp: The raw temperature reading from the BMP280 sensor
+ * @retval The compensated temperature in degrees Celsius (scaled by 100)
+ */
 static int32_t BMP280_CompensateTemperature(uint8_t channel,int32_t adc_temp)
 {
     int32_t var1;
@@ -163,6 +197,12 @@ static int32_t BMP280_CompensateTemperature(uint8_t channel,int32_t adc_temp)
 
     return temp;
 }
+
+/* @brief  Compensate the raw pressure reading from the BMP280 sensor
+ * @param  channel: The TCA9548A channel where the BMP280 is connected
+ * @param  adc_press: The raw pressure reading from the BMP280 sensor
+ * @retval The compensated pressure in Pascals
+ */
 static uint32_t BMP280_CompensatePressure(
     uint8_t channel,
     int32_t adc_press)
@@ -233,6 +273,10 @@ static uint32_t BMP280_CompensatePressure(
     return (uint32_t)(pressure >> 8);//Convert to Pa
 }
 
+/* @brief  Initialize the BMP280 sensor
+ * @param  channel: The TCA9548A channel where the BMP280 is connected
+ * @retval true if the initialization was successful, false otherwise
+ */
 bool BMP280_Init(uint8_t channel)
 {
     uint8_t chip_id = 0U;
@@ -261,6 +305,10 @@ bool BMP280_Init(uint8_t channel)
 
     return true; // Initialization successful
 }
+/* @brief  Configure the BMP280 sensor
+ * @param  channel: The TCA9548A channel where the BMP280 is connected
+ * @retval true if the configuration was successful, false otherwise
+ */
 bool BMP280_Configure(uint8_t channel)
 {
      uint8_t ctrl_meas ;
@@ -286,6 +334,10 @@ bool BMP280_Configure(uint8_t channel)
     return true; // Configuration successful
     
 }
+
+/* @brief  Initialize all BMP280 sensors connected to the TCA9548A
+ * @retval None
+ */
 void BMP280_InitALL(void)
 {
     for (uint8_t channel = 0; channel < BMP280_SENSOR_COUNT; channel++)
@@ -335,6 +387,11 @@ bool BMP280_ReadRawData(uint8_t channel, uint32_t *raw_temperature, uint32_t *ra
 
     return true; // Successfully read raw data
 }
+
+/* @brief  Start a forced measurement on the BMP280 sensor
+ * @param  channel: The TCA9548A channel where the BMP280 is connected
+ * @retval true if the measurement was started successfully, false otherwise
+ */
 bool BMP280_StartMeasurement(uint8_t channel)
 {
     uint8_t ctrl_meas;
@@ -353,6 +410,11 @@ bool BMP280_StartMeasurement(uint8_t channel)
     /* Writing forced mode starts the measurement. */
     return BMP280_WriteRegister(channel, BMP280_CONFIG_REG, &ctrl_meas, 1U);
 }
+
+/* @brief  Check if the BMP280 sensor is currently measuring
+ * @param  channel: The TCA9548A channel where the BMP280 is connected
+ * @retval true if the sensor is measuring, false otherwise
+ */
 bool BMP280_IsMeasuring(uint8_t channel)
 {
     uint8_t status;
@@ -381,6 +443,13 @@ bool BMP280_IsMeasuring(uint8_t channel)
         return false; // Measurement is finished
     }
 }
+
+/* @brief  Perform a measurement on the BMP280 sensor and return compensated temperature and pressure
+ * @param  channel: The TCA9548A channel where the BMP280 is connected
+ * @param  temp: Pointer to store the compensated temperature (scaled by 100)
+ * @param  press: Pointer to store the compensated pressure in Pascals
+ * @retval true if the measurement was successful, false otherwise
+ */
 bool BMP280_Mesure(uint8_t channel, int32_t *temp, uint32_t *press)
 {
     uint32_t raw_temperature = 0;

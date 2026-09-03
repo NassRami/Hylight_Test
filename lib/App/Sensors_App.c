@@ -2,19 +2,25 @@
 #include "BMP280.h"
 #include "Config.h"
 #include <stdbool.h>
+#include <stdint.h>
 
 static uint32_t sensors_press_val[BMP280_SENSOR_COUNT];
 static bool sensors_fault = false;
-
 static int16_t delta_p1 = 0;
 static int16_t delta_p2 = 0;
 static int16_t delta_p3 = 0;
 
+/* @brief  Initialize the sensors application
+ * @retval None
+ */
 void  Sensors_App_Init(void)
 {
     BMP280_InitALL();
 }
 
+/* @brief  Process the sensors and update the pressure values
+ * @retval None
+ */
 void Sensors_App_Process(void)
 {
     uint8_t channel;
@@ -40,7 +46,37 @@ void Sensors_App_Process(void)
     }
 }
 
+/* @brief  Get the fault status of the sensors
+ * @retval true if any sensor has a fault, false otherwise
+ */
 bool Sensors_App_Fault(void)
 {
     return sensors_fault;
 }
+
+/* @brief  Get the pressure value from a specific sensor
+ * @param  channel: The TCA9548A channel where the BMP280 is connected
+ * @retval The pressure value in Pascals, or 0 if the channel is invalid
+ */
+int16_t Sensors_GetDeltaP1(void)
+{
+    return delta_p1;
+}
+
+/* @brief  Get the pressure value from a specific sensor
+ * @param  channel: The TCA9548A channel where the BMP280 is connected
+ * @retval The pressure value in Pascals, or 0 if the channel is invalid
+ */
+int16_t Sensors_GetDeltaP2(void)
+{
+    return delta_p2;
+}
+
+/* @brief  Get the pressure value from a specific sensor
+ * @param  channel: The TCA9548A channel where the BMP280 is connected
+ * @retval The pressure value in Pascals, or 0 if the channel is invalid
+ */
+int16_t Sensors_GetDeltaP3(void)
+{
+    return delta_p3;
+}   

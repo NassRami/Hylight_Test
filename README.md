@@ -3,7 +3,7 @@
 
 ## App Scheduling
 
-The app is based on a the **`HAL_GetTick()'**, no 'HAL_Delay()' has been used to prevent the blocking and to allow the differents APPs Layers to run independtenly<br>
+The app is based on a the **`HAL_GetTick()`**, no **`HAL_Delay()`** has been used to prevent the blocking and to allow the differents APPs Layers to run independtenly<br>
 
 | Task | Period | Description |
 |---|---:|---|

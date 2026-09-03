@@ -1,6 +1,7 @@
 #ifndef FAN_APP_H
 #define FAN_APP_H
 
+#include <stdbool.h>
 typedef enum
 {
     FAN_APP_MODE_FORCE_ON = 0x01U,
@@ -15,6 +16,7 @@ void Fan_APP_SetMode(Fan_APP_Mode_t mode);
 void Fan_APP_Init(void);
 void Fan_APP_Process(void);
 bool Fan_APP_Fault(void);
+bool Fan_APP_GetRPM(uint16_t *rpm);
 
 
 #endif //FAN_APP_H

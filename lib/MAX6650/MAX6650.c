@@ -10,7 +10,14 @@
 
 static bool MAX6650_ReadRegister(uint8_t reg, uint8_t *data);
 static bool MAX6650_WriteRegister(uint8_t reg, uint8_t data);
+static bool MAX6650_WriteMode(uint8_t mode);
 
+/*
+ * @brief  Read a register from the MAX6650
+ * @param  reg: The register address to read from
+ * @param  data: Pointer to a variable where the read value will be stored
+ * @retval true if the read was successful, false otherwise
+ */
 static bool MAX6650_ReadRegister(uint8_t reg, uint8_t *data)
 {
     HAL_StatusTypeDef hal_status;
@@ -32,6 +39,13 @@ static bool MAX6650_ReadRegister(uint8_t reg, uint8_t *data)
 
     return (hal_status == HAL_OK);
 }
+
+/*
+ * @brief  Write a value to a register in the MAX6650
+ * @param  reg: The register address to write to
+ * @param  data: The value to write to the register
+ * @retval true if the write was successful, false otherwise
+ */
 static bool MAX6650_WriteRegister(uint8_t reg, uint8_t data)
 {
     HAL_StatusTypeDef hal_status;
@@ -48,6 +62,12 @@ static bool MAX6650_WriteRegister(uint8_t reg, uint8_t data)
 
     return (hal_status == HAL_OK);
 }
+
+/*
+ * @brief  Write the fan mode to the MAX6650
+ * @param  mode: The desired fan mode
+ * @retval true if the mode was successfully written, false otherwise
+ */
 static bool MAX6650_WriteMode(uint8_t mode)
 {
     uint8_t config;
@@ -62,6 +82,12 @@ static bool MAX6650_WriteMode(uint8_t mode)
         config
     );
 }
+
+/*
+ * @brief  Set the fan mode
+ * @param  mode: The desired fan mode
+ * @retval true if the mode was successfully set, false otherwise
+ */
 bool MAX6650_SetMode(MAX6650_Mode_t mode)
 {
     bool status;
@@ -107,6 +133,11 @@ bool MAX6650_SetMode(MAX6650_Mode_t mode)
 
     return true;
 }
+
+/*
+ * @brief  Initialize the MAX6650 fan controller
+ * @retval None
+ */
 void MAX6650_Init(void)
 {
     /*
@@ -129,6 +160,11 @@ void MAX6650_Init(void)
     }
 }
 
+/*
+ * @brief  Set the fan speed in closed loop mode
+ * @param  speed_value: The desired fan speed value (0-255)
+ * @retval true if the speed was successfully set, false otherwise
+ */
 bool MAX6650_SetClosedLoop(uint8_t speed_value)
 {
     /* Pass to full ON first*/
@@ -152,7 +188,11 @@ bool MAX6650_SetClosedLoop(uint8_t speed_value)
     return true;
 }
 
-
+/*
+ * @brief  Get the current fan speed in RPM
+ * @param  rpm: Pointer to a variable where the RPM value will be stored
+ * @retval true if the RPM was successfully retrieved, false otherwise
+ */
 bool MAX6650_GetRPM(uint16_t *rpm)
 {
     uint8_t tach_count = 0U;
@@ -183,6 +223,11 @@ bool MAX6650_GetRPM(uint16_t *rpm)
 
     return true;
 }
+
+/*
+ * @brief  Check the status of the fan
+ * @retval MAX6650_Status_t: The status of the fan
+ */
 MAX6650_Status_t MAX6650_CheckFan(void)
 {
     uint16_t rpm = 0U;

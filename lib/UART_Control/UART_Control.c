@@ -7,6 +7,22 @@ static bool uart_frame_state = false; // Flag to indicate if a complete UART fra
 static uint8_t uart_rx_buffer[8u]; // Buffer to store received UART data
 static uint8_t uart_buffer_index; // Index to keep track of the position in the buffer
 static uint8_t rx_byte = 0U;
+
+static uint8_t UART_Control_COBSEncode(
+    const uint8_t *input,
+    uint8_t input_length,
+    uint8_t *output,
+    uint8_t output_size);
+static uint16_t UART_Control_CRC16(const uint8_t *data, uint8_t length);
+
+
+/* @brief  Encode a buffer using COBS (Consistent Overhead Byte Stuffing)
+ * @param  input: Pointer to the input buffer to be encoded
+ * @param  input_length: Length of the input buffer
+ * @param  output: Pointer to the output buffer where the encoded data will be stored
+ * @param  output_size: Size of the output buffer
+ * @retval The length of the encoded data, or 0 if an error occurred (e.g., output buffer too small)
+ */
 static uint8_t UART_Control_COBSEncode(
     const uint8_t *input,
     uint8_t input_length,
@@ -79,6 +95,12 @@ static uint8_t UART_Control_COBSEncode(
 
     return write_index;
 }
+
+/* @brief  Calculate the CRC16 checksum for a given data buffer
+ * @param  data: Pointer to the data buffer
+ * @param  length: Length of the data buffer
+ * @retval The calculated CRC16 checksum
+ */
 static uint16_t UART_Control_CRC16(const uint8_t *data, uint8_t length)
 {
     uint16_t crc = 0xFFFFU;       // Initial value for CRC16
@@ -119,6 +141,11 @@ void UART_Init(void)
         1U
     );
 }
+
+/* @brief  UART receive complete callback function
+ * @param  huart3: Pointer to the UART handle
+ * @retval None
+ */
 void HAL_UART_RxCpltCallback(
     UART_HandleTypeDef *huart3)
 {
@@ -148,6 +175,13 @@ void HAL_UART_RxCpltCallback(
         );
 
 }
+
+/* @brief  Decode a COBS-encoded buffer
+ * @param  input: Pointer to the COBS-encoded input buffer
+ * @param  output: Pointer to the buffer where the decoded data will be stored
+ * @param  length: Length of the input buffer
+ * @retval true if decoding was successful, false otherwise
+ */
 bool UART_COBSDecode(uint8_t *input,//Rx_buff
                      uint8_t *output,//Buff after decoding
                       uint8_t length)//Length of the input buffer
@@ -176,6 +210,10 @@ bool UART_COBSDecode(uint8_t *input,//Rx_buff
     }
     return true;
 }
+
+/* @brief  Process the received UART frame
+    * @retval None
+*/
 void UART_Control_Process(void)
 {
     uint8_t decoded_buffer[8u]; // Buffer to store the decoded data
@@ -233,6 +271,14 @@ void UART_Control_Process(void)
                                 UART Transmission
 ****************************************************************************************/
 
+/* @brief  Transmit diagnostic data over UART
+ * @param  delta_p1: First pressure delta value
+ * @param  delta_p2: Second pressure delta value
+ * @param  delta_p3: Third pressure delta value
+ * @param  fan_rpm: Fan speed in RPM
+ * @param  flags: Additional flags for diagnostic purposes
+ * @retval None
+ */
 void UART_Control_TransmitDiagnostic(
     int16_t delta_p1,
     int16_t delta_p2,

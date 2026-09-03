@@ -7,10 +7,18 @@
 static Fan_APP_Mode_t fan_mode = FAN_APP_MODE_FORCE_OFF;
 static bool fault=false;
 
+/* @brief  Initialize the fan application
+ * @retval None
+ */
 void Fan_APP_Init(void)
 {
     MAX6650_Init();
 }
+
+/* @brief  Set the fan mode
+ * @param  mode: The desired fan mode
+ * @retval None
+ */
 void Fan_APP_SetMode(Fan_APP_Mode_t mode)
 {
     fan_mode = mode;
@@ -41,6 +49,10 @@ void Fan_APP_SetMode(Fan_APP_Mode_t mode)
             break;
     }
 }
+
+/* @brief  Process the fan application and check for faults
+ * @retval None
+ */
 void Fan_APP_Process(void)
 {
     MAX6650_Status_t status;
@@ -59,7 +71,20 @@ void Fan_APP_Process(void)
         fault = true; // hardware
     }
 }
+
+/* @brief  Get the current fan mode
+ * @retval The current fan mode
+ */
 bool Fan_APP_Fault(void)
 {
     return fault;
+}
+
+/* @brief  Get the current fan speed in RPM
+ * @param  rpm: Pointer to a variable where the RPM value will be stored
+ * @retval true if the RPM was successfully retrieved, false otherwise
+ */
+bool Fan_APP_GetRPM(uint16_t *rpm)
+{
+    return MAX6650_GetRPM(rpm);
 }
