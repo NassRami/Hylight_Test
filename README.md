@@ -44,5 +44,7 @@ The 8-byte diagnostic payload is organized as:
 | 4-5 | ΔP3 | int16 |
 | 6-7 | Fan RPM | uint16 |
 
+## Test Plan
+The test cases are documented in `Tests/` directory.
 
 
