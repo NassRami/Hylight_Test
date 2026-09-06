@@ -18,11 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "BMP280.h"
-#include "UART_Control.h"
-#include "CAN_DIAG.h"
-#include "TCA9548A.h"
-#include "Fan_APP.h"
+#include "App.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -103,7 +99,7 @@ int main(void)
   MX_I2C2_Init();
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
-
+  App_Init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -111,7 +107,7 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
+    App_Process();
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */

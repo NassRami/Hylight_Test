@@ -65,7 +65,7 @@ bool CAN_Transmit(int16_t delta_p1, int16_t delta_p2, int16_t delta_p3, uint16_t
     FDCAN_TxHeaderTypeDef tx_header;
     uint8_t data[8];
 
-    tx_header.Identifier = CAN_GetId();
+    tx_header.Identifier = can_id ;
     tx_header.IdType = FDCAN_STANDARD_ID;
     tx_header.TxFrameType = FDCAN_DATA_FRAME;
     tx_header.DataLength = FDCAN_DLC_BYTES_8;
